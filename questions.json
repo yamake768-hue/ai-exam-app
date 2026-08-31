@@ -296,6 +296,59 @@
       ],
       "answer": "確率 (面積の合計は1になる)",
       "explanation": "確率分布を図にしたとき、正規分布とx軸の間の面積は1となり、その面積がそのまま確率に対応します。[cite: 1]"
+    },
+    {
+      "id": "math_014",
+      "type": "multiple_choice",
+      "question": "関数 f(x) = log(x^2 + 1) をxで微分した導関数として正しいものはどれか。",
+      "options": [
+        "2x / (x^2 + 1)",
+        "1 / (x^2 + 1)",
+        "2x * log(x^2 + 1)",
+        "2 / (x^2 + 1)"
+      ],
+      "answer": "2x / (x^2 + 1)",
+      "explanation": "対数関数の微分公式 (log □)' = □' / □ を利用します。分母が x^2 + 1、分子がその微分である 2x となります。[cite: 1]"
+    },
+    {
+      "id": "math_015",
+      "type": "multiple_choice",
+      "question": "対角成分よりも下側の成分がすべて0である「上三角行列」、または上側の成分がすべて0である「下三角行列」の行列式 det はどのように求められるか。",
+      "options": [
+        "対角成分の積となる。",
+        "対角成分の和となる。",
+        "すべての成分の積となる。",
+        "必ず0になる。"
+      ],
+      "answer": "対角成分の積となる。",
+      "explanation": "上三角行列や下三角行列のとき、行列式は対角成分の積となり、固有値は対角成分そのものとなります。[cite: 1]"
+    },
+    {
+      "id": "math_016",
+      "type": "fill_in_blank",
+      "question": "ベクトル a = (1, -2, -3) の L1ノルム（各成分の絶対値の和）を求めよ。（半角数字）",
+      "answer": "6",
+      "explanation": "L1ノルムは各成分の絶対値を足し合わせます。|1| + |-2| + |-3| = 1 + 2 + 3 = 6 となります。[cite: 1]"
+    },
+    {
+      "id": "math_017",
+      "type": "multiple_choice",
+      "question": "事象Aの確率が P(A)=1/4、事象Bの確率が P(B)=3/5、共通部分の確率が P(A∩B)=1/5 のとき、事象Bが起こる場合に事象Aが起こる条件付き確率 P(A|B) はいくつか。",
+      "options": [
+        "1/3",
+        "4/5",
+        "1/4",
+        "3/4"
+      ],
+      "answer": "1/3",
+      "explanation": "条件付き確率 P(A|B) = P(A∩B) / P(B) です。(1/5) ÷ (3/5) = 1/3 となります。[cite: 1]"
+    },
+    {
+      "id": "math_018",
+      "type": "fill_in_blank",
+      "question": "階乗の計算において、 7! / 4! を計算した結果を求めよ。（半角数字）",
+      "answer": "210",
+      "explanation": "(7×6×5×4×3×2×1) / (4×3×2×1) となり、4×3×2×1 が約分されるため、残った 7×6×5 = 210 となります。[cite: 1]"
     }
   ],
   "第3章：プログラミング": [
@@ -515,6 +568,78 @@
       ],
       "answer": "LinearRegression",
       "explanation": "結果を数字で表す回帰問題には `LinearRegression()`（線形回帰）などを用います。名前に `Classifier` や `SVC` (Support Vector Classifier) が付くものは「分類問題」に用います。[cite: 3]"
+    },
+    {
+      "id": "prog_021",
+      "type": "multiple_choice",
+      "question": "NumPyで対角成分が1でそれ以外が0となる「単位行列」を生成する関数はどれか。",
+      "options": [
+        "np.eye()",
+        "np.ones()",
+        "np.zeros()",
+        "np.full()"
+      ],
+      "answer": "np.eye()",
+      "explanation": "単位行列を生成するのは `np.eye()` です。`np.ones()` は全ての要素が1の配列を生成します。[cite: 1]"
+    },
+    {
+      "id": "prog_022",
+      "type": "multiple_choice",
+      "question": "NumPyで、すべての要素を指定した任意の数値（例：3.14）で埋めた配列を生成する関数はどれか。",
+      "options": [
+        "np.full()",
+        "np.fill()",
+        "np.ones()",
+        "np.arange()"
+      ],
+      "answer": "np.full()",
+      "explanation": "`np.full((3, 4), 3.14)` のように指定することで、3行4列の配列をすべて3.14で埋めることができます。[cite: 1]"
+    },
+    {
+      "id": "prog_023",
+      "type": "multiple_choice",
+      "question": "pandasのDataFrameにおいて、欠損値（NaN）がない部分に `True` を、欠損値の部分に `False` を返す関数はどれか。",
+      "options": [
+        "notna()",
+        "isna()",
+        "dropna()",
+        "fillna()"
+      ],
+      "answer": "notna()",
+      "explanation": "`isna()` は欠損値の部分にTrueを返しますが、`notna()` はその逆で、データが存在する（欠損値ではない）部分にTrueを返します。[cite: 3]"
+    },
+    {
+      "id": "prog_024",
+      "type": "multiple_choice",
+      "question": "pandasで欠損値が含まれるDataFrameを処理する際、`df.dropna(how='all')` と指定した場合の処理結果として正しいものはどれか。",
+      "options": [
+        "行（または列）の「すべて」の要素が欠損値である場合のみ、その行（列）を削除する。",
+        "行（または列）に「1つでも」欠損値が含まれていれば、その行（列）を削除する。",
+        "すべての欠損値を平均値で置き換える。",
+        "データフレーム全体を削除する。"
+      ],
+      "answer": "行（または列）の「すべて」の要素が欠損値である場合のみ、その行（列）を削除する。",
+      "explanation": "`how='all'` を指定すると、すべての列（または行）がNaNであるデータのみを削除します。一部だけがNaNの場合は削除されません。[cite: 3]"
+    },
+    {
+      "id": "prog_025",
+      "type": "multiple_choice",
+      "question": "Matplotlibでグラフを描画する際、背景を黒にするなどのグラフ全体の特徴・デザインを一括で変更する関数はどれか。",
+      "options": [
+        "plt.style.use()",
+        "plt.figure()",
+        "plt.legend()",
+        "plt.theme()"
+      ],
+      "answer": "plt.style.use()",
+      "explanation": "`plt.style.use('dark_background')` や `plt.style.use('seaborn-bright')` などを指定することで、グラフの見た目（テーマ）を一括で変更できます。[cite: 3]"
+    },
+    {
+      "id": "prog_026",
+      "type": "fill_in_blank",
+      "question": "scikit-learnのK-Means法を用いてクラスタリングを行う際、データを3つのグループに分類するモデルを生成したい。`model = KMeans(________=3)` 空欄に入る引数名を答えよ。",
+      "answer": "n_clusters",
+      "explanation": "K-Means法でいくつのクラスタ（グループ）に分割するかを指定する引数は `n_clusters` です。[cite: 3]"
     }
   ]
 }
