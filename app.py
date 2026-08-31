@@ -1,7 +1,19 @@
 import streamlit as st
 import json
+import re
 import os
 
+@st.cache_data
+def load_data():
+    questions_file = "questions.json"
+    if os.path.exists(questions_file):
+        with open(questions_file, "r", encoding="utf-8") as f:
+            data_str = f.read()
+            #[cite: 1] などの引用タグを正規表現で一括削除
+            clean_str = re.sub(r'\', '', data_str)
+            return json.loads(clean_str)
+    return {}
+    
 # --- ページ設定 ---
 st.set_page_config(page_title="AI実装検定A級 CBT対策アプリ", layout="centered")
 
