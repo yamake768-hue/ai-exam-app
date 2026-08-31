@@ -9,8 +9,8 @@ def load_data():
     if os.path.exists(questions_file):
         with open(questions_file, "r", encoding="utf-8") as f:
             data_str = f.read()
-            #[cite: 1] などの引用タグを正規表現で一括削除
-            clean_str = re.sub(r'\', '', data_str)
+            #[cite: 1] や[cite: 1, 3] などの引用表記を一括削除
+            clean_str = re.sub(r'\+\]', '', data_str)
             return json.loads(clean_str)
     return {}
     
