@@ -18,7 +18,7 @@ def load_data():
         with open(questions_file, "r", encoding="utf-8") as f:
             data_str = f.read()
             #[cite: 1] などの引用タグを正規表現で一括削除
-            clean_str = re.sub(r'\', '', data_str)
+            clean_str = re.sub(r'\]+\]', '', data_str)
             return json.loads(clean_str)
     return {}
 
