@@ -2,7 +2,9 @@ import streamlit as st
 import json
 import re
 import os
-import base64
+import urllib.parse
+import io
+import qrcode
 
 # --- ページ設定 ---
 st.set_page_config(
@@ -18,7 +20,6 @@ def load_data():
     if os.path.exists(questions_file):
         with open(questions_file, "r", encoding="utf-8") as f:
             data_str = f.read()
-            # 引用タグ[cite: 1] などを正規表現で一括削除
             clean_str = re.sub(r'\]+\]', '', data_str)
             return json.loads(clean_str)
     return {}
@@ -50,7 +51,6 @@ if "review_marks" not in st.session_state:
     marks_str = params.get("marks", "")
     st.session_state.review_marks = set(marks_str.split(",")) if marks_str else set()
 
-# 状態変更時にURLパラメータを更新する関数
 def sync_params():
     st.query_params["category"] = st.session_state.category
     st.query_params["mode"] = st.session_state.mode
@@ -89,17 +89,20 @@ def toggle_review(q_id):
         st.session_state.review_marks.add(q_id)
     sync_params()
 
-def restore_data():
-    code = st.session_state.transfer_code_input
-    if code:
-        try:
-            decoded_bytes = base64.b64decode(code.encode('utf-8'))
-            decoded_str = decoded_bytes.decode('utf-8')
-            st.session_state.review_marks = set(decoded_str.split(",")) if decoded_str else set()
-            sync_params()
-            st.session_state.restore_msg = "復元に成功しました！"
-        except Exception:
-            st.session_state.restore_msg = "無効なコードです。"
+# --- QRコード生成関数 ---
+def generate_qr_code(url):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=8,
+        border=2,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
 
 # --- サイドバー ---
 st.sidebar.title("学習モード設定")
@@ -111,28 +114,26 @@ st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("💾 データ引き継ぎ")
-with st.sidebar.expander("引き継ぎコードの発行 / 復元"):
-    st.markdown("**1. コードを発行してコピー**")
+st.sidebar.subheader("📱 端末引き継ぎ (QRコード)")
+
+with st.sidebar.expander("カメラで読み取って同期"):
+    query_dict = {
+        "category": st.session_state.category,
+        "mode": st.session_state.mode,
+        "q": str(st.session_state.q_index)
+    }
     marks_joined = ",".join(st.session_state.review_marks)
     if marks_joined:
-        # 復習リストのID群をBase64でエンコードして短縮
-        export_code = base64.b64encode(marks_joined.encode('utf-8')).decode('utf-8')
-        st.code(export_code)
-        st.caption("※右上のコピーアイコンをタップしてください")
-    else:
-        st.info("チェックした問題がありません。")
-        
-    st.markdown("---")
-    st.markdown("**2. コードを貼り付けて復元**")
-    st.text_input("コードを入力:", key="transfer_code_input")
-    st.button("復元する", on_click=restore_data)
+        query_dict["marks"] = marks_joined
     
-    if "restore_msg" in st.session_state:
-        if "成功" in st.session_state.restore_msg:
-            st.success(st.session_state.restore_msg)
-        else:
-            st.error(st.session_state.restore_msg)
+    encoded_query = urllib.parse.urlencode(query_dict)
+    
+    # ユーザーがアクセスしているベースURLを組み立て（ローカル/Cloud両対応）
+    sync_url = f"?{encoded_query}"
+    
+    qr_img = generate_qr_code(sync_url)
+    st.image(qr_img, caption="iPhoneのカメラでかざしてください", use_container_width=True)
+    st.caption("※現在のチェック状態・問題位置をそのまま開きます")
 
 # --- UI構築 ---
 if st.session_state.mode == "チェックした問題のみ（復習）":
