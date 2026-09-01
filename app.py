@@ -59,42 +59,61 @@ def save_user_marks(user_id: str, marks_set: set):
         "marks": list(marks_set)
     }).execute()
 
+# --- URLパラメータ同期関数（デグレ修正箇所） ---
+def sync_params():
+    st.query_params["user"] = st.session_state.user_id
+    st.query_params["category"] = st.session_state.category
+    st.query_params["mode"] = st.session_state.mode
+    st.query_params["q"] = str(st.session_state.q_index)
+
 # --- セッション初期化 ---
+params = st.query_params
+
 if "user_id" not in st.session_state:
-    st.session_state.user_id = st.query_params.get("user", "user1")
+    st.session_state.user_id = params.get("user", "user1")
 
 if "review_marks" not in st.session_state:
     st.session_state.review_marks = load_user_marks(st.session_state.user_id)
 
 if "category" not in st.session_state:
-    st.session_state.category = categories[0]
+    st.session_state.category = params.get("category", categories[0]) if params.get("category") in categories else categories[0]
 
 if "mode" not in st.session_state:
-    st.session_state.mode = "すべての問題"
+    st.session_state.mode = params.get("mode", "すべての問題")
 
 if "q_index" not in st.session_state:
-    st.session_state.q_index = 0
+    try:
+        st.session_state.q_index = int(params.get("q", 0))
+    except ValueError:
+        st.session_state.q_index = 0
+
+# 起動時に現在の状態をURLに反映
+sync_params()
 
 # --- コールバック ---
 def on_user_change():
-    st.query_params["user"] = st.session_state.user_id_input
     st.session_state.user_id = st.session_state.user_id_input
     st.session_state.review_marks = load_user_marks(st.session_state.user_id)
     st.session_state.q_index = 0
+    sync_params()
 
 def on_category_change():
     st.session_state.q_index = 0
+    sync_params()
 
 def on_mode_change():
     st.session_state.q_index = 0
+    sync_params()
 
 def go_prev():
     if st.session_state.q_index > 0:
         st.session_state.q_index -= 1
+        sync_params()
 
 def go_next(total_q):
     if st.session_state.q_index < total_q - 1:
         st.session_state.q_index += 1
+        sync_params()
 
 def toggle_review(q_id):
     if q_id in st.session_state.review_marks:
