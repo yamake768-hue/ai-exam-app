@@ -128,9 +128,10 @@ with st.sidebar.expander("カメラで読み取って同期"):
     
     encoded_query = urllib.parse.urlencode(query_dict)
     
-BASE_URL = "https://ai-exam-app-pkvgwua2grjwfrkbtpjrtk.streamlit.app"  # ←ご自身のアプリのURLに書き換えてください
-
-sync_url = f"{BASE_URL}?{encoded_query}"
+    # ★ご自身のStreamlit Cloudの公開URLに書き換えてください
+    base_app_url = "https://ai-exam-app-pkvgwua2grjwfrkbtpjrtk.streamlit.app"
+    
+    sync_url = f"{base_app_url}?{encoded_query}"
     
     qr_img = generate_qr_code(sync_url)
     st.image(qr_img, caption="iPhoneのカメラでかざしてください", use_container_width=True)
