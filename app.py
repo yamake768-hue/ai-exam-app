@@ -3,19 +3,13 @@ import json
 import re
 import os
 
-@st.cache_data
-def load_data():
-    questions_file = "questions.json"
-    if os.path.exists(questions_file):
-        with open(questions_file, "r", encoding="utf-8") as f:
-            data_str = f.read()
-            #[cite: 1] や[cite: 1, 3] などの引用表記を一括削除
-            clean_str = re.sub(r'\+\]', '', data_str)
-            return json.loads(clean_str)
-    return {}
-    
 # --- ページ設定 ---
-st.set_page_config(page_title="AI実装検定A級 CBT対策アプリ", layout="centered")
+# initial_sidebar_state="collapsed" により、スマホやiPadでサイドバーをデフォルト非表示にします
+st.set_page_config(
+    page_title="AI実装検定A級 CBT対策アプリ", 
+    layout="centered", 
+    initial_sidebar_state="collapsed"
+)
 
 # --- データ読み込み ---
 @st.cache_data
@@ -23,7 +17,10 @@ def load_data():
     questions_file = "questions.json"
     if os.path.exists(questions_file):
         with open(questions_file, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data_str = f.read()
+            # 正規表現を強化し、スペースの有無に関わらず[span_1](start_span)[span_1](end_span) などを完全に削除
+            clean_str = re.sub(r'\+\]', '', data_str)
+            return json.loads(clean_str)
     return {}
 
 data = load_data()
