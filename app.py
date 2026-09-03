@@ -172,7 +172,8 @@ else:
         is_checked = q_id in st.session_state.review_marks
         st.checkbox("📌 復習リストに追加", value=is_checked, key=f"check_{q_id}", on_change=toggle_review, args=(q_id,))
 
-    st.info(current_q.get("question", ""))
+    q_text = current_q.get("question", "")
+    st.info(q_text)
 
     if "image_path" in current_q and current_q["image_path"]:
         if os.path.exists(current_q["image_path"]):
