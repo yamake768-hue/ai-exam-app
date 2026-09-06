@@ -157,10 +157,6 @@ def go_next(total_q):
                 break
     sync_params()
 
-def on_jump_change():
-    st.session_state.q_index = st.session_state.jump_q_index - 1
-    sync_params()
-
 def toggle_review(q_id):
     if q_id in st.session_state.review_marks:
         st.session_state.review_marks.remove(q_id)
@@ -202,6 +198,7 @@ total_q = len(questions)
 if total_q == 0:
     st.warning("この分野で表示する問題がありません。")
 else:
+    # ページ描画時のインデックス補正（章またぎ時など）
     if st.session_state.q_index >= total_q:
         st.session_state.q_index = total_q - 1
 
@@ -211,7 +208,7 @@ else:
     progress_val = (st.session_state.q_index + 1) / total_q
     st.progress(progress_val)
 
-    # === 【改善】位置固定の上部ナビゲーション & ジャンプ機能 ===
+    # === 【改善】表示が完全に同期する上部ナビゲーション ===
     disable_p = not has_prev()
     disable_n = not has_next(total_q)
     
@@ -219,15 +216,19 @@ else:
     with col_nav1:
         st.button("◀ 前へ", key="prev_top", on_click=go_prev, disabled=disable_p, use_container_width=True)
     with col_nav2:
-        st.selectbox(
+        # セレクトボックスの値と現在のインデックスを強制同期
+        selected_q = st.selectbox(
             "問題ジャンプ", 
             range(1, total_q + 1), 
             index=st.session_state.q_index, 
             format_func=lambda x: f"問題 {x} / {total_q}", 
-            key="jump_q_index", 
-            on_change=on_jump_change,
             label_visibility="collapsed"
         )
+        # セレクトボックスが手動で変更されたら即座に反映
+        if selected_q - 1 != st.session_state.q_index:
+            st.session_state.q_index = selected_q - 1
+            sync_params()
+            st.rerun()
     with col_nav3:
         st.button("次へ ▶", key="next_top", on_click=go_next, args=(total_q,), disabled=disable_n, use_container_width=True)
     # ========================================================
