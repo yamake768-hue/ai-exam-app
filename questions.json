@@ -101,22 +101,13 @@
     {
       "id": "ai_012",
       "type": "multiple_choice",
-      "question": "【画像問題】図の順伝播において、入力値 $x_1=10, x_2=7$、重み $w_{11}=7, w_{12}=3, w_{21}=4, w_{22}=2$ のとき、出力値 $a_1$ を求めよ。",
-      "image_path": "images/p31_forward.png",
-      "options": ["73", "44", "98", "140"],
-      "answer": "98",
-      "explanation": "順伝播では、入力値と重みを掛け合わせて足します。$a_1 = (x_1 \\times w_{11}) + (x_2 \\times w_{21}) = (10 \\times 7) + (7 \\times 4) = 70 + 28 = 98$ となります。"
-    },
-    {
-      "id": "ai_013",
-      "type": "multiple_choice",
       "question": "ニューラルネットワークにおいて、$x$と重み$w$を掛け合わせた値（$xw$）に対して、さらに精度を向上させるために加えられる値「$b$」を何と呼ぶか。",
       "options": ["バイアス", "シグモイド", "ロス", "ノルム"],
       "answer": "バイアス",
       "explanation": "重み($w$)で調整された入力値に対して、精度を向上するために加えられる値がバイアス(bias)です。$a = x \\times w + b$ のように計算されます。"
     },
     {
-      "id": "ai_014",
+      "id": "ai_013",
       "type": "multiple_choice",
       "question": "ニューラルネットワークの学習で誤差を小さくするために設定される平均二乗誤差(MSE)の式として正しい要素はどれか。",
       "options": [
@@ -129,37 +120,36 @@
       "explanation": "MSE = $\\frac{1}{N} \\sum (x_n - k_n)^2$ です。誤差の2乗を足し合わせて、データの数で割る（平均をとる）計算をします。"
     },
     {
+      "id": "ai_014",
+      "type": "multiple_choice",
+      "question": "ニューラルネットワークにおいて、入力値が0以下の場合は0を出力し、0より大きい場合は入力値をそのまま出力する、現在最も広く使われている活性化関数はどれか。",
+      "options": ["シグモイド関数", "ステップ関数", "ReLU関数", "ソフトマックス関数"],
+      "answer": "ReLU関数",
+      "explanation": "勾配消失問題を軽減できるため、ディープラーニングの隠れ層で最もよく使われるのがReLU（ランプ）関数です。"
+    },
+    {
       "id": "ai_015",
       "type": "multiple_choice",
-      "question": "【画像問題】図のネットワークの誤差逆伝播において、$Y = w_1 X$、 $Z = w_2 Y$ のとき、$Z$を$w_1$で偏微分した $\\frac{dZ}{dw_1}$ はどれか。",
-      "image_path": "images/p43_backprop.png",
-      "options": ["$w_1 Y$", "$w_2 X$", "$w_1 X$", "$w_2 Y$"],
-      "answer": "$w_2 X$",
-      "explanation": "連鎖律 (chain rule) を用います。$\\frac{dZ}{dw_1} = \\frac{dZ}{dY} \\times \\frac{dY}{dw_1} = (w_2 \\times 1) \\times (1 \\times X) = w_2 X$ となります。"
+      "question": "ニューラルネットワークの学習において、誤差を最小化するために重みを更新する手法（最適化アルゴリズム）の中で、過去の勾配の移動平均を利用して効率的に最適化を行う手法はどれか。",
+      "options": ["SGD (確率的勾配降下法)", "Adam", "MSE", "KNN"],
+      "answer": "Adam",
+      "explanation": "Adamは、学習率を自動で調整し、効率的かつ高速に最適解に到達しやすいため、現在標準的に使われている最適化手法です。"
     },
     {
       "id": "ai_016",
       "type": "multiple_choice",
-      "question": "画像認識において、画像の特徴を抽出する「畳み込み層」と、位置ズレへの耐性を高める「プーリング層」を持つニューラルネットワークを何と呼ぶか。",
-      "options": ["RNN", "GAN", "CNN", "Transformer"],
-      "answer": "CNN",
-      "explanation": "CNN（畳み込みニューラルネットワーク）は、主に画像認識に用いられるアルゴリズムで、「畳み込み層」と「プーリング層」を繰り返す構造が特徴です。"
+      "question": "画像認識などで用いられるCNN（畳み込みニューラルネットワーク）において、画像からエッジなどの特徴を抽出するために「フィルタ（カーネル）」を適用する層を何と呼ぶか。",
+      "options": ["プーリング層", "全結合層", "畳み込み層", "ドロップアウト層"],
+      "answer": "畳み込み層",
+      "explanation": "フィルタをスライドさせて特徴マップを作成する層を畳み込み層と呼びます。プーリング層は情報を圧縮（ダウンサンプリング）する層です。"
     },
     {
       "id": "ai_017",
       "type": "multiple_choice",
-      "question": "音声や自然言語、株価などの「時系列データ（順番に意味があるデータ）」を扱うのに適しており、過去の隠れ層の出力を現在の入力と一緒に処理するニューラルネットワーク構造はどれか。",
-      "options": ["CNN", "RNN", "Autoencoder", "SVM"],
+      "question": "音声やテキストデータのように、過去のデータが未来のデータに影響を与える「時系列データ」の処理に最も適したニューラルネットワークはどれか。",
+      "options": ["CNN", "RNN", "SVM", "k-Means"],
       "answer": "RNN",
-      "explanation": "RNN（再帰型ニューラルネットワーク）は、直前の状態をネットワーク内部に保持するループ構造を持ち、時系列データや言語処理に強みを発揮します。"
-    },
-    {
-      "id": "ai_018",
-      "type": "multiple_choice",
-      "question": "機械学習モデルの評価指標（混同行列）において、「モデルが『正例』と予測したもののうち、実際に『正例』だった割合」を示すものはどれか。",
-      "options": ["正解率 (Accuracy)", "再現率 (Recall)", "適合率 (Precision)", "F値 (F-measure)"],
-      "answer": "適合率 (Precision)",
-      "explanation": "モデルの予測ベースでどれだけ正確だったかを示すのが「適合率（Precision）」です。一方、実際の正例のうち、どれだけ予測が見つけ出せたかを示すのが「再現率（Recall）」です。"
+      "explanation": "RNN（再帰型ニューラルネットワーク）は、過去の隠れ層の状態を現在の入力とともに受け取るループ構造を持ち、時系列データの処理に優れています。"
     }
   ],
   "第2章：数学": [
@@ -377,6 +367,56 @@
     {
       "id": "math_019",
       "type": "multiple_choice",
+      "question": "【AI応用：順伝播と内積】図の順伝播において、入力値 $x_1=10, x_2=7$、重み $w_{11}=7, w_{12}=3, w_{21}=4, w_{22}=2$ のとき、出力値 $a_1$ を求めよ。",
+      "image_path": "images/p31_forward.png",
+      "options": ["73", "44", "98", "140"],
+      "answer": "98",
+      "explanation": "順伝播では、入力値と重みを掛け合わせて足します。$a_1 = (x_1 \\times w_{11}) + (x_2 \\times w_{21}) = (10 \\times 7) + (7 \\times 4) = 70 + 28 = 98$ となります。"
+    },
+    {
+      "id": "math_020",
+      "type": "multiple_choice",
+      "question": "【AI応用：誤差逆伝播と連鎖律】図のネットワークの誤差逆伝播において、$Y = w_1 X$、 $Z = w_2 Y$ のとき、$Z$を$w_1$で偏微分した $\\frac{dZ}{dw_1}$ はどれか。",
+      "image_path": "images/p43_backprop.png",
+      "options": ["$w_1 Y$", "$w_2 X$", "$w_1 X$", "$w_2 Y$"],
+      "answer": "$w_2 X$",
+      "explanation": "連鎖律 (chain rule) を用います。$\\frac{dZ}{dw_1} = \\frac{dZ}{dY} \\times \\frac{dY}{dw_1} = (w_2 \\times 1) \\times (1 \\times X) = w_2 X$ となります。"
+    },
+    {
+      "id": "math_021",
+      "type": "multiple_choice",
+      "question": "統計におけるデータの散らばり具合を表す指標で、「各データの値から平均値を引いた値（偏差）を2乗し、その平均をとった値」を何と呼ぶか。",
+      "options": ["標準偏差", "中央値", "分散", "期待値"],
+      "answer": "分散",
+      "explanation": "偏差の2乗の平均が「分散」です。分散の正の平方根をとったものが「標準偏差」となります。"
+    },
+    {
+      "id": "math_022",
+      "type": "multiple_choice",
+      "question": "対数の性質として、数式 $\\log_a(x \\times y)$ と常に等しい式はどれか。",
+      "options": ["$\\log_a x \\times \\log_a y$", "$\\log_a x + \\log_a y$", "$y \\log_a x$", "$\\log_a(x + y)$"],
+      "answer": "$\\log_a x + \\log_a y$",
+      "explanation": "真数の掛け算は、対数の足し算に分解できます。情報量などの計算で頻出する性質です。"
+    },
+    {
+      "id": "math_023",
+      "type": "multiple_choice",
+      "question": "行列の性質について。行列の行と列を入れ替えた行列（行を列に、列を行にしたもの）を何と呼ぶか。",
+      "options": ["逆行列", "単位行列", "転置行列", "正方行列"],
+      "answer": "転置行列",
+      "explanation": "行と列を入れ替えたものを転置行列（Transposed matrix）と呼びます。行列の右上に $T$ を付けて表記することが多いです。"
+    },
+    {
+      "id": "math_024",
+      "type": "multiple_choice",
+      "question": "歪みのない6面サイコロ（1〜6の目）を1回振ったときに出る目の「期待値」はいくつか。",
+      "options": ["3", "3.5", "4", "4.5"],
+      "answer": "3.5",
+      "explanation": "各目が出る確率は $\\frac{1}{6}$ です。すべての目と確率を掛けて足し合わせると $(1+2+3+4+5+6) \\times \\frac{1}{6} = 3.5$ となります。"
+    },
+    {
+      "id": "math_025",
+      "type": "multiple_choice",
       "question": "ニューラルネットワークの活性化関数である「シグモイド関数 $f(x) = \\frac{1}{1 + e^{-x}}$」を微分した導関数 $f'(x)$ の性質として正しい式はどれか。",
       "options": [
         "$f'(x) = f(x) - 1$",
@@ -385,41 +425,7 @@
         "$f'(x) = e^{-x} f(x)$"
       ],
       "answer": "$f'(x) = f(x)(1 - f(x))$",
-      "explanation": "シグモイド関数の微分は、微分後の式に元のシグモイド関数自身が現れる $f(x)(1 - f(x))$ という非常にシンプルで計算しやすい形になるのが特徴です。"
-    },
-    {
-      "id": "math_020",
-      "type": "multiple_choice",
-      "question": "歪みのない6面サイコロ（1〜6の目）を1回振ったときに出る目の「期待値（平均値）」はいくつか。",
-      "options": ["3", "3.5", "4", "4.5"],
-      "answer": "3.5",
-      "explanation": "各目が出る確率は $\\frac{1}{6}$ です。$(1+2+3+4+5+6) \\times \\frac{1}{6} = \\frac{21}{6} = 3.5$ が期待値になります。"
-    },
-    {
-      "id": "math_021",
-      "type": "multiple_choice",
-      "question": "データの散らばり度合いを示す「分散」を求めるための計算式として正しいものはどれか。",
-      "options": [
-        "平均値と各データの差の絶対値の平均",
-        "平均値と各データの差（偏差）の2乗の平均",
-        "データの最大値から最小値を引いた値",
-        "各データを2乗したものの合計"
-      ],
-      "answer": "平均値と各データの差（偏差）の2乗の平均",
-      "explanation": "分散は「(各データ - 平均値)^2 の平均」として定義されます。この分散の平方根をとったものが「標準偏差」です。"
-    },
-    {
-      "id": "math_022",
-      "type": "multiple_choice",
-      "question": "行列 $A = \\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}$ と $B = \\begin{pmatrix} 2 & 0 \\\\ 1 & 2 \\end{pmatrix}$ の積 $AB$ を求めよ。",
-      "options": [
-        "$\\begin{pmatrix} 3 & 2 \\\\ 4 & 6 \\end{pmatrix}$",
-        "$\\begin{pmatrix} 2 & 0 \\\\ 3 & 8 \\end{pmatrix}$",
-        "$\\begin{pmatrix} 4 & 4 \\\\ 10 & 8 \\end{pmatrix}$",
-        "$\\begin{pmatrix} 2 & 4 \\\\ 7 & 14 \\end{pmatrix}$"
-      ],
-      "answer": "$\\begin{pmatrix} 4 & 4 \\\\ 10 & 8 \\end{pmatrix}$",
-      "explanation": "行列の積は「左の行 × 右の列」で計算します。1行1列目は $(1 \\times 2) + (2 \\times 1) = 4$。1行2列目は $(1 \\times 0) + (2 \\times 2) = 4$。2行1列目は $(3 \\times 2) + (4 \\times 1) = 10$。2行2列目は $(3 \\times 0) + (4 \\times 2) = 8$ となります。"
+      "explanation": "シグモイド関数の微分は、微分後の式に元のシグモイド関数自身が現れ、$f(x)(1 - f(x))$ という非常にシンプルで計算しやすい形になるのが特徴です。"
     }
   ],
   "第3章：プログラミング": [
@@ -715,6 +721,38 @@
     {
       "id": "prog_027",
       "type": "multiple_choice",
+      "question": "NumPyにおいて、形状（次元や要素数）が異なる配列同士の演算を行う際、自動的にサイズを拡張して計算を可能にする仕組みを何と呼ぶか。",
+      "options": ["スライス", "ブロードキャスト", "コンカチネイト", "リシェイプ"],
+      "answer": "ブロードキャスト",
+      "explanation": "足りない要素を自動で補完・拡張して演算を行うNumPyの強力な機能がブロードキャストです。"
+    },
+    {
+      "id": "prog_028",
+      "type": "multiple_choice",
+      "question": "pandasのDataFrameにおいて、特定の列のカテゴリ（ラベル）ごとにデータをグループ化して、平均や合計などを算出するためのメソッドはどれか。",
+      "options": ["df.groupby()", "df.merge()", "df.dropna()", "df.concat()"],
+      "answer": "df.groupby()",
+      "explanation": "カテゴリごとの集計（グループ化）を行うには `groupby()` メソッドを使用します。"
+    },
+    {
+      "id": "prog_029",
+      "type": "multiple_choice",
+      "question": "scikit-learnにおいて、データセットを「モデルに学習させるためのデータ」と「モデルの精度を評価するためのデータ」に分割する関数はどれか。",
+      "options": ["train_test_split", "cross_val_score", "KFold", "GridSearchCV"],
+      "answer": "train_test_split",
+      "explanation": "`train_test_split` は機械学習のパイプラインにおいて最も最初に行う重要なデータ分割関数です。"
+    },
+    {
+      "id": "prog_030",
+      "type": "multiple_choice",
+      "question": "分類モデルの予測結果を評価する際、モデルの予測（陽性・陰性）と実際の結果（真・偽）を2×2のマトリックス状にまとめた表を何と呼ぶか。",
+      "options": ["相関行列", "混同行列 (Confusion Matrix)", "単位行列", "共分散行列"],
+      "answer": "混同行列 (Confusion Matrix)",
+      "explanation": "真陽性(TP)、偽陽性(FP)、真陰性(TN)、偽陰性(FN)の4要素で分類結果を評価する表が混同行列です。scikit-learnでは `confusion_matrix` 関数で出力できます。"
+    },
+    {
+      "id": "prog_031",
+      "type": "multiple_choice",
       "question": "scikit-learnにおいて、名前に「回帰」と付いているが、実際には数値を予測する回帰問題ではなく「分類（クラス分け）」問題に用いられるアルゴリズムはどれか。",
       "options": [
         "LinearRegression",
@@ -723,33 +761,7 @@
         "DecisionTreeRegressor"
       ],
       "answer": "LogisticRegression",
-      "explanation": "ロジスティック回帰（Logistic Regression）は名前に反して分類アルゴリズムです（あるカテゴリに属する確率をS字カーブのシグモイド関数を使って予測します）。"
-    },
-    {
-      "id": "prog_028",
-      "type": "multiple_choice",
-      "question": "scikit-learnでデータセットを学習用とテスト用に分割する `train_test_split` を実行する際、乱数シードを固定して「毎回同じ分割結果（再現性）」を持たせるために指定する引数はどれか。",
-      "options": [
-        "test_size",
-        "shuffle",
-        "random_state",
-        "stratify"
-      ],
-      "answer": "random_state",
-      "explanation": "`random_state=0` のように任意の数値を指定しておくことで、データをランダムに分割する際の結果が常に固定され、再現性が保たれます。"
-    },
-    {
-      "id": "prog_029",
-      "type": "multiple_choice",
-      "question": "pandasのDataFrameにおいて、指定した特定の列（カテゴリなど）の値ごとにデータをグループ化し、それぞれの平均や合計などの集計を行うメソッドはどれか。",
-      "options": [
-        "groupby()",
-        "merge()",
-        "concat()",
-        "sort_values()"
-      ],
-      "answer": "groupby()",
-      "explanation": "`df.groupby('クラス名').mean()` のように記述することで、クラス（カテゴリ）ごとの平均値などを一気に計算できる非常に強力で頻出のメソッドです。"
+      "explanation": "ロジスティック回帰（Logistic Regression）は名前に反して分類アルゴリズムです。あるデータがそのクラスに属する確率をシグモイド関数を使って予測し、分類を行います。"
     }
   ]
 }
