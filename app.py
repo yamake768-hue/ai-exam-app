@@ -59,7 +59,7 @@ def save_user_marks(user_id: str, marks_set: set):
         "marks": list(marks_set)
     }).execute()
 
-# --- URLパラメータ同期関数（デグレ修正箇所） ---
+# --- URLパラメータ同期関数 ---
 def sync_params():
     st.query_params["user"] = st.session_state.user_id
     st.query_params["category"] = st.session_state.category
@@ -87,8 +87,32 @@ if "q_index" not in st.session_state:
     except ValueError:
         st.session_state.q_index = 0
 
-# 起動時に現在の状態をURLに反映
 sync_params()
+
+# --- ページ遷移判定ロジック ---
+def has_prev():
+    """前の問題（または前の章）が存在するか判定"""
+    if st.session_state.q_index > 0:
+        return True
+    current_cat_idx = categories.index(st.session_state.category)
+    for i in range(current_cat_idx - 1, -1, -1):
+        cat_name = categories[i]
+        if st.session_state.mode == "チェックした問題のみ（復習）":
+            if any(q["id"] in st.session_state.review_marks for q in data[cat_name]): return True
+        elif len(data[cat_name]) > 0: return True
+    return False
+
+def has_next(total_q):
+    """次の問題（または次の章）が存在するか判定"""
+    if st.session_state.q_index < total_q - 1:
+        return True
+    current_cat_idx = categories.index(st.session_state.category)
+    for i in range(current_cat_idx + 1, len(categories)):
+        cat_name = categories[i]
+        if st.session_state.mode == "チェックした問題のみ（復習）":
+            if any(q["id"] in st.session_state.review_marks for q in data[cat_name]): return True
+        elif len(data[cat_name]) > 0: return True
+    return False
 
 # --- コールバック ---
 def on_user_change():
@@ -108,20 +132,42 @@ def on_mode_change():
 def go_prev():
     if st.session_state.q_index > 0:
         st.session_state.q_index -= 1
-        sync_params()
+    else:
+        current_cat_idx = categories.index(st.session_state.category)
+        for i in range(current_cat_idx - 1, -1, -1):
+            cat_name = categories[i]
+            has_q = any(q["id"] in st.session_state.review_marks for q in data[cat_name]) if st.session_state.mode == "チェックした問題のみ（復習）" else len(data[cat_name]) > 0
+            if has_q:
+                st.session_state.category = cat_name
+                st.session_state.q_index = 9999 # 描画時に補正される
+                break
+    sync_params()
 
 def go_next(total_q):
     if st.session_state.q_index < total_q - 1:
         st.session_state.q_index += 1
-        sync_params()
+    else:
+        current_cat_idx = categories.index(st.session_state.category)
+        for i in range(current_cat_idx + 1, len(categories)):
+            cat_name = categories[i]
+            has_q = any(q["id"] in st.session_state.review_marks for q in data[cat_name]) if st.session_state.mode == "チェックした問題のみ（復習）" else len(data[cat_name]) > 0
+            if has_q:
+                st.session_state.category = cat_name
+                st.session_state.q_index = 0
+                break
+    sync_params()
+
+def on_jump_change():
+    st.session_state.q_index = st.session_state.jump_q_index - 1
+    sync_params()
 
 def toggle_review(q_id):
     if q_id in st.session_state.review_marks:
         st.session_state.review_marks.remove(q_id)
     else:
         st.session_state.review_marks.add(q_id)
-    # クラウドに即時保存
     save_user_marks(st.session_state.user_id, st.session_state.review_marks)
+
 
 # --- サイドバー ---
 st.sidebar.title("設定 & 同期")
@@ -154,7 +200,7 @@ else:
 total_q = len(questions)
 
 if total_q == 0:
-    st.warning("表示する問題がありません。")
+    st.warning("この分野で表示する問題がありません。")
 else:
     if st.session_state.q_index >= total_q:
         st.session_state.q_index = total_q - 1
@@ -165,13 +211,35 @@ else:
     progress_val = (st.session_state.q_index + 1) / total_q
     st.progress(progress_val)
 
+    # === 【改善】位置固定の上部ナビゲーション & ジャンプ機能 ===
+    disable_p = not has_prev()
+    disable_n = not has_next(total_q)
+    
+    col_nav1, col_nav2, col_nav3 = st.columns([1, 2, 1])
+    with col_nav1:
+        st.button("◀ 前へ", key="prev_top", on_click=go_prev, disabled=disable_p, use_container_width=True)
+    with col_nav2:
+        st.selectbox(
+            "問題ジャンプ", 
+            range(1, total_q + 1), 
+            index=st.session_state.q_index, 
+            format_func=lambda x: f"問題 {x} / {total_q}", 
+            key="jump_q_index", 
+            on_change=on_jump_change,
+            label_visibility="collapsed"
+        )
+    with col_nav3:
+        st.button("次へ ▶", key="next_top", on_click=go_next, args=(total_q,), disabled=disable_n, use_container_width=True)
+    # ========================================================
+
     col_header1, col_header2 = st.columns([3, 1])
     with col_header1:
-        st.caption(f"問題 {st.session_state.q_index + 1} / {total_q}")
+        st.caption(f"現在の分野: {st.session_state.category}")
     with col_header2:
         is_checked = q_id in st.session_state.review_marks
-        st.checkbox("📌 復習リストに追加", value=is_checked, key=f"check_{q_id}", on_change=toggle_review, args=(q_id,))
+        st.checkbox("📌 復習に追加", value=is_checked, key=f"check_{q_id}", on_change=toggle_review, args=(q_id,))
 
+    # 問題文の表示 (数式対応済み)
     q_text = current_q.get("question", "")
     st.info(q_text)
 
@@ -212,6 +280,6 @@ else:
 
     col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
     with col_btn1:
-        st.button("◀ 前の問題へ", on_click=go_prev, disabled=(st.session_state.q_index == 0), use_container_width=True)
+        st.button("◀ 前へ", key="prev_bottom", on_click=go_prev, disabled=disable_p, use_container_width=True)
     with col_btn3:
-        st.button("次の問題へ ▶", on_click=go_next, args=(total_q,), disabled=(st.session_state.q_index == total_q - 1), use_container_width=True)
+        st.button("次へ ▶", key="next_bottom", on_click=go_next, args=(total_q,), disabled=disable_n, use_container_width=True)
