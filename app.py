@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import re
 import os
+import random  # シャッフル機能のために追加
 from supabase import create_client, Client
 
 # --- ページ設定 ---
@@ -87,6 +88,14 @@ if "q_index" not in st.session_state:
     except ValueError:
         st.session_state.q_index = 0
 
+# --- シャッフル機能用のセッション追加 ---
+if "is_shuffle" not in st.session_state:
+    st.session_state.is_shuffle = False
+if "question_order" not in st.session_state:
+    st.session_state.question_order = []
+if "needs_order_update" not in st.session_state:
+    st.session_state.needs_order_update = True
+
 sync_params()
 
 # --- ページ遷移判定ロジック ---
@@ -119,14 +128,22 @@ def on_user_change():
     st.session_state.user_id = st.session_state.user_id_input
     st.session_state.review_marks = load_user_marks(st.session_state.user_id)
     st.session_state.q_index = 0
+    st.session_state.needs_order_update = True  # 同期時に順序リセット
     sync_params()
 
 def on_category_change():
     st.session_state.q_index = 0
+    st.session_state.needs_order_update = True  # 章変更時に順序リセット
     sync_params()
 
 def on_mode_change():
     st.session_state.q_index = 0
+    st.session_state.needs_order_update = True  # モード変更時に順序リセット
+    sync_params()
+
+def on_shuffle_change():
+    st.session_state.q_index = 0
+    st.session_state.needs_order_update = True  # シャッフルON/OFFで順序リセット
     sync_params()
 
 def go_prev():
@@ -140,6 +157,7 @@ def go_prev():
             if has_q:
                 st.session_state.category = cat_name
                 st.session_state.q_index = 9999 # 描画時に補正される
+                st.session_state.needs_order_update = True  # 章またぎで順序リセット
                 break
     sync_params()
 
@@ -154,6 +172,7 @@ def go_next(total_q):
             if has_q:
                 st.session_state.category = cat_name
                 st.session_state.q_index = 0
+                st.session_state.needs_order_update = True  # 章またぎで順序リセット
                 break
     sync_params()
 
@@ -179,6 +198,13 @@ st.sidebar.radio(
     on_change=on_mode_change
 )
 
+# シャッフルのチェックボックスを追加
+st.sidebar.checkbox(
+    "🔀 問題をシャッフルする", 
+    key="is_shuffle", 
+    on_change=on_shuffle_change
+)
+
 # --- UI構築 ---
 if st.session_state.mode == "チェックした問題のみ（復習）":
     st.title("🔁 復習モード実行中")
@@ -198,11 +224,22 @@ total_q = len(questions)
 if total_q == 0:
     st.warning("この分野で表示する問題がありません。")
 else:
+    # --- シャッフル順序の構築と適用 ---
+    if st.session_state.needs_order_update or len(st.session_state.question_order) != total_q:
+        order = list(range(total_q))
+        if st.session_state.is_shuffle:
+            random.shuffle(order)
+        st.session_state.question_order = order
+        st.session_state.needs_order_update = False
+    # ----------------------------------
+
     # ページ描画時のインデックス補正（章またぎ時など）
     if st.session_state.q_index >= total_q:
         st.session_state.q_index = total_q - 1
 
-    current_q = questions[st.session_state.q_index]
+    # シャッフル順序を加味して現在の問題を取得
+    current_order_idx = st.session_state.question_order[st.session_state.q_index]
+    current_q = questions[current_order_idx]
     q_id = current_q["id"]
 
     progress_val = (st.session_state.q_index + 1) / total_q
