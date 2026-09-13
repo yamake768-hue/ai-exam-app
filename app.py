@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import re
 import os
-import random  # シャッフル機能のために追加
+import random
 from supabase import create_client, Client
 
 # --- ページ設定 ---
@@ -38,7 +38,28 @@ if not data:
     st.error("questions.json が見つかりません。")
     st.stop()
 
-categories = list(data.keys())
+# 実際のJSONキー（第1章〜第4章）
+original_categories = list(data.keys())
+# UI用のプルダウン項目に「全章ミックス」を追加
+categories = ["全章ミックス（総合演習）"] + original_categories
+
+def get_questions_for_category(cat_name):
+    """指定されたカテゴリの問題リストを取得する（全章ミックス対応）"""
+    if cat_name == "全章ミックス（総合演習）":
+        all_qs = []
+        for c in original_categories:
+            for q in data[c]:
+                q_copy = q.copy()
+                q_copy["disp_category"] = c # どの章の問題か表示用に追加
+                all_qs.append(q_copy)
+        return all_qs
+    else:
+        qs = []
+        for q in data.get(cat_name, []):
+            q_copy = q.copy()
+            q_copy["disp_category"] = cat_name
+            qs.append(q_copy)
+        return qs
 
 # --- クラウド同期関数 ---
 def load_user_marks(user_id: str):
@@ -100,27 +121,27 @@ sync_params()
 
 # --- ページ遷移判定ロジック ---
 def has_prev():
-    """前の問題（または前の章）が存在するか判定"""
     if st.session_state.q_index > 0:
         return True
     current_cat_idx = categories.index(st.session_state.category)
     for i in range(current_cat_idx - 1, -1, -1):
         cat_name = categories[i]
+        cat_qs = get_questions_for_category(cat_name)
         if st.session_state.mode == "チェックした問題のみ（復習）":
-            if any(q["id"] in st.session_state.review_marks for q in data[cat_name]): return True
-        elif len(data[cat_name]) > 0: return True
+            if any(q["id"] in st.session_state.review_marks for q in cat_qs): return True
+        elif len(cat_qs) > 0: return True
     return False
 
 def has_next(total_q):
-    """次の問題（または次の章）が存在するか判定"""
     if st.session_state.q_index < total_q - 1:
         return True
     current_cat_idx = categories.index(st.session_state.category)
     for i in range(current_cat_idx + 1, len(categories)):
         cat_name = categories[i]
+        cat_qs = get_questions_for_category(cat_name)
         if st.session_state.mode == "チェックした問題のみ（復習）":
-            if any(q["id"] in st.session_state.review_marks for q in data[cat_name]): return True
-        elif len(data[cat_name]) > 0: return True
+            if any(q["id"] in st.session_state.review_marks for q in cat_qs): return True
+        elif len(cat_qs) > 0: return True
     return False
 
 # --- コールバック ---
@@ -128,22 +149,22 @@ def on_user_change():
     st.session_state.user_id = st.session_state.user_id_input
     st.session_state.review_marks = load_user_marks(st.session_state.user_id)
     st.session_state.q_index = 0
-    st.session_state.needs_order_update = True  # 同期時に順序リセット
+    st.session_state.needs_order_update = True
     sync_params()
 
 def on_category_change():
     st.session_state.q_index = 0
-    st.session_state.needs_order_update = True  # 章変更時に順序リセット
+    st.session_state.needs_order_update = True
     sync_params()
 
 def on_mode_change():
     st.session_state.q_index = 0
-    st.session_state.needs_order_update = True  # モード変更時に順序リセット
+    st.session_state.needs_order_update = True
     sync_params()
 
 def on_shuffle_change():
     st.session_state.q_index = 0
-    st.session_state.needs_order_update = True  # シャッフルON/OFFで順序リセット
+    st.session_state.needs_order_update = True
     sync_params()
 
 def go_prev():
@@ -153,11 +174,12 @@ def go_prev():
         current_cat_idx = categories.index(st.session_state.category)
         for i in range(current_cat_idx - 1, -1, -1):
             cat_name = categories[i]
-            has_q = any(q["id"] in st.session_state.review_marks for q in data[cat_name]) if st.session_state.mode == "チェックした問題のみ（復習）" else len(data[cat_name]) > 0
+            cat_qs = get_questions_for_category(cat_name)
+            has_q = any(q["id"] in st.session_state.review_marks for q in cat_qs) if st.session_state.mode == "チェックした問題のみ（復習）" else len(cat_qs) > 0
             if has_q:
                 st.session_state.category = cat_name
-                st.session_state.q_index = 9999 # 描画時に補正される
-                st.session_state.needs_order_update = True  # 章またぎで順序リセット
+                st.session_state.q_index = 9999
+                st.session_state.needs_order_update = True
                 break
     sync_params()
 
@@ -168,11 +190,12 @@ def go_next(total_q):
         current_cat_idx = categories.index(st.session_state.category)
         for i in range(current_cat_idx + 1, len(categories)):
             cat_name = categories[i]
-            has_q = any(q["id"] in st.session_state.review_marks for q in data[cat_name]) if st.session_state.mode == "チェックした問題のみ（復習）" else len(data[cat_name]) > 0
+            cat_qs = get_questions_for_category(cat_name)
+            has_q = any(q["id"] in st.session_state.review_marks for q in cat_qs) if st.session_state.mode == "チェックした問題のみ（復習）" else len(cat_qs) > 0
             if has_q:
                 st.session_state.category = cat_name
                 st.session_state.q_index = 0
-                st.session_state.needs_order_update = True  # 章またぎで順序リセット
+                st.session_state.needs_order_update = True
                 break
     sync_params()
 
@@ -198,9 +221,8 @@ st.sidebar.radio(
     on_change=on_mode_change
 )
 
-# シャッフルのチェックボックスを追加
 st.sidebar.checkbox(
-    "🔀 問題をシャッフルする", 
+    "🔀 問題・選択肢をシャッフルする", 
     key="is_shuffle", 
     on_change=on_shuffle_change
 )
@@ -213,7 +235,7 @@ else:
 
 selected_category = st.selectbox("分野を選択してください", categories, key="category", on_change=on_category_change)
 
-all_questions = data[selected_category]
+all_questions = get_questions_for_category(selected_category)
 if st.session_state.mode == "チェックした問題のみ（復習）":
     questions = [q for q in all_questions if q["id"] in st.session_state.review_marks]
 else:
@@ -224,28 +246,43 @@ total_q = len(questions)
 if total_q == 0:
     st.warning("この分野で表示する問題がありません。")
 else:
-    # --- シャッフル順序の構築と適用 ---
-    if st.session_state.needs_order_update or len(st.session_state.question_order) != total_q:
+    needs_rebuild = False
+    
+    if st.session_state.get("last_category") != st.session_state.category:
+        needs_rebuild = True
+        st.session_state.last_category = st.session_state.category
+        
+    if st.session_state.get("last_mode") != st.session_state.mode:
+        needs_rebuild = True
+        st.session_state.last_mode = st.session_state.mode
+        
+    if st.session_state.get("last_shuffle") != st.session_state.is_shuffle:
+        needs_rebuild = True
+        st.session_state.last_shuffle = st.session_state.is_shuffle
+        
+    if len(st.session_state.get("question_order", [])) != total_q:
+        needs_rebuild = True
+
+    if needs_rebuild:
         order = list(range(total_q))
         if st.session_state.is_shuffle:
             random.shuffle(order)
         st.session_state.question_order = order
         st.session_state.needs_order_update = False
-    # ----------------------------------
 
-    # ページ描画時のインデックス補正（章またぎ時など）
     if st.session_state.q_index >= total_q:
         st.session_state.q_index = total_q - 1
 
-    # シャッフル順序を加味して現在の問題を取得
     current_order_idx = st.session_state.question_order[st.session_state.q_index]
     current_q = questions[current_order_idx]
     q_id = current_q["id"]
+    
+    # 全章ミックスの場合、元の出所（章）を画面に表示するための変数
+    disp_category_name = current_q.get("disp_category", st.session_state.category)
 
     progress_val = (st.session_state.q_index + 1) / total_q
     st.progress(progress_val)
 
-    # === 【改善】表示が完全に同期する上部ナビゲーション ===
     disable_p = not has_prev()
     disable_n = not has_next(total_q)
     
@@ -253,7 +290,6 @@ else:
     with col_nav1:
         st.button("◀ 前へ", key="prev_top", on_click=go_prev, disabled=disable_p, use_container_width=True)
     with col_nav2:
-        # セレクトボックスの値と現在のインデックスを強制同期
         selected_q = st.selectbox(
             "問題ジャンプ", 
             range(1, total_q + 1), 
@@ -261,23 +297,20 @@ else:
             format_func=lambda x: f"問題 {x} / {total_q}", 
             label_visibility="collapsed"
         )
-        # セレクトボックスが手動で変更されたら即座に反映
         if selected_q - 1 != st.session_state.q_index:
             st.session_state.q_index = selected_q - 1
             sync_params()
             st.rerun()
     with col_nav3:
         st.button("次へ ▶", key="next_top", on_click=go_next, args=(total_q,), disabled=disable_n, use_container_width=True)
-    # ========================================================
 
     col_header1, col_header2 = st.columns([3, 1])
     with col_header1:
-        st.caption(f"現在の分野: {st.session_state.category}")
+        st.caption(f"現在の分野: {disp_category_name}")
     with col_header2:
         is_checked = q_id in st.session_state.review_marks
         st.checkbox("📌 復習に追加", value=is_checked, key=f"check_{q_id}", on_change=toggle_review, args=(q_id,))
 
-    # 問題文の表示 (数式対応済み)
     q_text = current_q.get("question", "")
     st.info(q_text)
 
@@ -293,7 +326,18 @@ else:
     
     if q_type == "multiple_choice":
         options = current_q.get("options", [])
-        selected_ans = st.radio("選択肢:", options, key=input_key, index=None)
+        
+        if st.session_state.is_shuffle:
+            if st.session_state.get("current_opt_q_id") != q_id:
+                shuffled = list(options)
+                random.shuffle(shuffled)
+                st.session_state.current_shuffled_opts = shuffled
+                st.session_state.current_opt_q_id = q_id
+            display_options = st.session_state.current_shuffled_opts
+        else:
+            display_options = options
+
+        selected_ans = st.radio("選択肢:", display_options, key=input_key, index=None)
         if selected_ans is not None:
             if selected_ans == current_q.get("answer", ""):
                 st.success("正解！ 🎉")
